@@ -1,0 +1,488 @@
+---
+title: 'R PROJEKT MA0009: Graduate Admissions'
+subtitle: 'Wie man eine Bewerbung stärken kann'
+author: "Mikel Funes Morfín, Maxim Alexander Baumgärtel"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+    number_sections: yes 
+    fig_caption: yes
+    includes: 
+      toc_title: "Inhaltsverzeichnis"
+  html_document:
+    toc: yes
+    toc_depth: 3
+    number_sections: yes
+    theme: united
+    highlight: tango
+    dev: yes
+    df_print: default
+    fig_caption: yes
+bibliography: ../test.bib
+---
+```{r, Preambel Data, include = FALSE}
+library(tidyverse)
+library(readr)
+library(fs)
+library(dplyr)
+library(ggplot2)
+
+
+
+# Dataset
+
+dataset1 <- read_csv("../Daten/adm_data1.csv") # note that this is the changed one and will be used afte explanation 
+dataset <- read_csv("../Daten/adm_data.csv")
+
+```
+
+
+```{=latex}
+\newpage
+```
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Einleitung
+Als heranwachsende Studenten aus internationalen Hintergründen interessiert uns die Optimierung von unseren Bewerbungen für ein weiteres Studium und auch die Stärke einer solchen Bewerbung. Wir beziehen uns auf den Datensatz von [https://www.kaggle.com/datasets/akshaydattatraykhare/data-for-admission-in-the-university]. Weiter wollen wir schauen wie sich die Durchschnittsergebnisse aus den standardisierten Tests verändert anhand des Ratings der Universität. 
+
+## Erste Übersicht
+Wir erstellen eine intiale Übersicht mittels der \textit{summary()} - Funktion 
+
+```{r}
+dataset %>% 
+  summary()
+```
+Wir haben 9 verschiedene Spalten: Serial No., GRE Score, TOEFL Score, University Ranking, SOP, LOR, CGPA, Research und Chance of Admit. 
+
+### Aufbau eines Dateneintrags
+In diesem Abschnitt wollen wir zeigen, wie die Daten zustande gekommen sind und wo mögliche Korrelationen enstehen könnten zwischen den Variablen und einer Bewewerbung. 
+
+Angenommen wir sind ein Student im Bachelor und wollen uns auf ein Masterprogramm bewerben. Wir wollen unsere 'Chance of Admit' maximieren, das entspricht unserer Wahrscheinlichkeit in das Programm angenommen zu werden. Hier müssen wir kurz klarstellen, dass ein maximaler 'Chance of Admit' Eintrag nicht direkt aussagt, dass man angenommen wurde. Abhängig von der Universität die wir besuchen wollen, könnten sich die Aufnahme Kriterien verändern, je nach Ranking. Jetzt kommen wir zu den Kriterien die wir als Student erfüllen könnten. 
+
+Alle folgenden Unterüberschriften sind bezogen auf die Variablen innerhalb unserer Datenanalyse. 
+
+### Was ist GRE Score?
+Der GRE (Graduate Record Examination) ist ein standardisierter Test, der darauf abzielt, die Fähigkeiten eines Kandidaten in den Bereichen analytisches Schreiben, abstraktes Denken, Mathematik und allgemeines Vokabular zu bewerten. Für amerikanische Graduate Schools ist der GRE ein Schlüsselfaktor, um die Eignung eines Kandidaten für ihre Masterprogramme zu beurteilen. Der Test besteht aus drei Teilen: quantitativ, verbal und schriftlich. In jedem der beiden ersten Bereiche können maximal 170 Punkte und im schriftlichen Teil bis zu 6 Punkte erreicht werden.
+
+### Was ist TOEFL Score?
+Der TOEFL (Test of English as a Foreign Language) ist eine standardisierte Prüfung, die speziell dafür entwickelt wurde, um die Englischkenntnisse von Nicht-Muttersprachlern zu beurteilen. Dieser Test ist besonders relevant für Studierende, die sich auf amerikanische Masterprogramme bewerben. Der TOEFL überprüft die Fähigkeiten in vier Bereichen: Lesen, Hören, Sprechen und Schreiben. Dabei werden das Verständnis und die Analyse von akademischen Texten, das Verständnis der englischen Sprache durch Hörbeispiele, die Fähigkeit, auf Situationen oder Themen zu reagieren und Meinungen zu äußern, sowie die Kompetenz, klar und logisch in Englisch zu schreiben, bewertet. Die maximale Punktzahl im TOEFL Test beträgt 120 Punkte, wobei jeder Bereich bis zu 30 Punkte beitragen kann.
+
+### Was ist University Ranking?
+Das University Ranking ist eine Variable im Datensatz, die das Ranking der Universität darstellt, wobei keine weiteren Informationen über die Bewertungsmethodik vorliegen. Es wird angenommen, dass eine 5 das bestmögliche Ranking repräsentiert.
+
+### Was ist SOP?
+Das SOP (Statement of Purpose) ist vergleichbar mit einem Motivationsschreiben, das in Bewerbungen für Master- oder Doktorandenprogramme verwendet wird. Es zielt darauf ab, die Persönlichkeit des Bewerbers, seine Karriereziele, Inspirationen und Qualifikationen zu präsentieren. Wesentliche Aspekte des SOP umfassen die Darstellung der Motivation und der Gründe für das Interesse an einem bestimmten Studienfeld oder Programm, die Beschreibung der Karriereziele und wie das Programm dabei helfen kann, diese zu erreichen, die Hervorhebung relevanter akademischer und beruflicher Erfahrungen sowie Einblicke in die Persönlichkeit des Bewerbers und deren Beitrag zum akademischen und beruflichen Werdegang. Die Bewertung des SOP erfolgt auf einer Skala von 0 bis 5, wobei 5 die höchste Punktzahl darstellt.
+
+### Was ist LOR?
+Ein LOR (Letter of Recommendation) ist ein wichtiges Dokument, das üblicherweise bei Bewerbungen für höhere Bildungsprogramme eingereicht wird. Es dient dazu, die Qualifikationen, Fähigkeiten und Charaktereigenschaften des Bewerbers aus der Perspektive einer vertrauenswürdigen und meist hierarchisch übergeordneten Person darzustellen. Ein effektiver LOR bestätigt die Qualifikationen des Bewerbers, bietet persönliche Einsichten in seine Persönlichkeit und Arbeitsweise und stärkt die Bewerbung durch die Bestätigung der Eignung für das Programm oder die Position aus einer glaubwürdigen Quelle.
+
+### Was ist CGPA?
+Der "Current GPA" (aktuelle GPA) bezieht sich auf den aktuellen Notendurchschnitt eines Studierenden. "GPA" steht für "Grade Point Average" (Notendurchschnitt).
+
+### Was ist Research?
+Die Variable "Research" wird in den Daten lediglich als Wert 1 oder 0 angegeben, wobei eine 1 vorhandene Forschungserfahrung repräsentiert und eine 0 das Fehlen von Forschungserfahrung anzeigt.
+
+```{=latex}
+\newpage{}
+```
+
+
+# Daten
+Die Einträge aus dem Datensatz enthalten Leerzeichen innerhalb der Nomenklatur. Dies könnte zu möglichen Fehlern innerhalb der Bearbeitung führen. Um das zu umgehen haben wir der Sauberkeithalber die Nomenklatur manuell ersetzt. In dem neuen Datensatz sind an Stelle der Leerzeichen nun ".". Wir erkennen auch, dass der Eintrag 'Serial No.' keine Aussagekraft für unsere Analyse besitzt. Somit können wir diese Variable rauslassen. Das machen wir durch mit "dplyr." 
+
+```{r}
+dataset1 <- dataset1 %>% select(-Serial.No.)
+```
+
+Innerhalb dieses Abschnittes wollen wir die Verteilungen der Variablen analysieren und veranschaulichen. Dazu betraachten wir in erster Linie Boxplots der Daten. 
+```{=latex}
+Wir erhalten eine erste Übersicht der Daten durch die \textit{head()}-Funktion. 
+```
+
+
+```{r}
+# Zusammenfassung der Daten
+head(dataset1)
+
+# Struktur der Daten
+str(dataset1)
+```
+
+```{=latex}
+\newpage
+```
+
+## Visualisierung der Daten
+Wir wollen die Verteilung der Beobachtungen visualisieren, das machen wir durch Histogramme: 
+
+### CGPA
+```{r, out.width="50%" , fig.cap="CGPA Histogramm", echo = FALSE}
+library(ggplot2)
+
+ggplot(dataset1, aes(x = CGPA)) +
+  geom_histogram(binwidth = 0.2, fill = "#0DA3CB", color = "white", alpha = 0.5) +
+  labs(title = "",
+       x = "CGPA",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size = 12),
+        axis.text.x = element_text(face = "italic"),
+        axis.text.y = element_text(face = "italic"))
+```
+
+Hier können wir erkennen, dass der Median und der Mittelwert bei ungefähr 8.6 liegen. Dies weißt daraufhin, dass die Durchschnittsnote der Bewerbungen relativ hochliegt. Weiter können wir sehen, dass der minimale Notenschnitt bei 6.8 liegt und der maximale bei ungefähr 9.92 liegt. Wir müssen hier anmerken, dass die Durchschnittsnoten nicht mit Notensystem übereinstimmen, was an der TUM verbreitet ist. 
+
+### GRE Score
+```{r, out.width="50%", fig.cap="GRE Score Histogramm", echo = FALSE}
+library(ggplot2)
+
+ggplot(dataset1, aes(x = GRE.Score)) +
+  geom_histogram(binwidth = 2, fill = "#0DA3CB", color = "white", alpha = 0.5) +
+  geom_density(aes(y = after_stat(count)), color = "#0A8DB0", alpha = 0.5) +
+  labs(title = "",
+       x = "GRE",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size = 12),
+        axis.text.x = element_text(face = "italic"),
+        axis.text.y = element_text(face = "italic"))
+```
+
+Bei den GRE Scores der Bewerber wird ein ähnliches Bild gespiegelt, wie in der vorigen Variable. Der Median und Durchschnitt liegen bei ungefähr 317 Punkten. Hier wäre es auch interessant zu sehen, wie die Punkte aufgebaut sind anhand der Resultate aus dem verbalen und dem quantitativen Teil. Für weitere Infos zu den Verteilungen der Resultate [@magoosh]. Der maximale Wert aus dem Datensatz ist 340. 
+
+### TOEFL Score 
+```{r, out.width="50%", fig.cap="TOEFL Score Histogramm", echo = FALSE}
+library(ggplot2)
+
+ggplot(dataset1, aes(x = TOEFL.Score)) +
+  geom_histogram(binwidth = 2, fill = "#0DA3CB", color = "white", alpha = 0.5) +
+  geom_density(aes(y = after_stat(count)), color = "#0A8DB0", alpha = 0.5) +
+  labs(title = "",
+       x = "TOEFL",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size = 12),
+        axis.text.x = element_text(face = "italic"),
+        axis.text.y = element_text(face = "italic"))
+```
+
+Durch das Histogramm können wir erkennen, dass der Durchschnitt und Median nahe bei einanderliegen, mit einem ungefähren Wert von 107. Das Maximum beträgt hier 120 Punkte und das Minimum sind 92 Punkte. 
+
+### University Rating
+```{r, out.width="50%", fig.cap="University Rating Histogramm", echo = FALSE}
+library(ggplot2)
+
+ggplot(dataset1, aes(x = University.Rating)) +
+  geom_histogram(binwidth = 0.4, fill = "#0DA3CB", color = "white", alpha = 0.5) +
+  labs(title = "",
+       x = "University Rating",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size = 12),
+        axis.text.x = element_text(face = "italic"),
+        axis.text.y = element_text(face = "italic"))
+```
+
+Die Daten zum Hochschulrating geben Auskunft über die Bewertung der Hochschulen mit einem Minimum von 1 und einem Maximum von 5. Der Median von 3 zeigt an, dass die Hälfte der Hochschulen ein gleiches oder niedrigeres Rating hat, während die andere Hälfte ein gleiches oder höheres Rating hat. Der Mittelwert, der mit 3,087 etwas höher als der Median ist, spiegelt den Durchschnitt der Bewertungen der Hochschulen im Datensatz wider und gibt einen Überblick über die Verteilung der Hochschulbewertungen.
+
+### Statement of Purpose
+
+```{r, out.width="50%", fig.cap="SOP Histogramm", echo = FALSE}
+library(ggplot2)
+
+ggplot(dataset1, aes(x = SOP)) +
+  geom_histogram(binwidth = 0.25, fill = "#0DA3CB", color = "white", alpha = 0.5) +
+  labs(title = "",
+       x = "SOP",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size = 12),
+        axis.text.x = element_text(face = "italic"),
+        axis.text.y = element_text(face = "italic"))
+
+```
+
+Die Variable "SOP" (Statement of Purpose) reicht von 1 bis 5. Der Median von 3,5 zeigt an, dass die Hälfte der SOPs gleich oder niedriger bewertet wird, während die andere Hälfte gleich oder höher bewertet wird. Der Mittelwert, der mit 3,4 etwas niedriger als der Median ist, spiegelt den Durchschnitt der Bewertungen wider, die den SOPs im Datensatz zugewiesen wurden, und liefert eine Gesamtschätzung des wahrgenommenen Qualitätsniveaus der bewerteten Absichtserklärungen.
+
+### Letter of Recommendation 
+```{r, out.width="50%", fig.cap="LOR Histogramm", echo = FALSE}
+library(ggplot2)
+
+ggplot(dataset1, aes(x = LOR)) +
+  geom_histogram(binwidth = 0.25, fill = "#0DA3CB", color = "white", alpha = 0.5) +
+  labs(title = "",
+       x = "LOR",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size = 12),
+        axis.text.x = element_text(face = "italic"),
+        axis.text.y = element_text(face = "italic"))
+
+```
+
+Für die Variable "LOR" (Letter of Recommendation) geben die Daten Aufschluss über die wahrgenommene Qualität der Empfehlungsschreiben, mit einer Mindestbewertung von 1 und einer Höchstbewertung von 5. Der Median von 3,5 zeigt an, dass die Hälfte der Empfehlungsschreiben gleich oder niedriger bewertet wird, während die andere Hälfte gleich oder höher bewertet wird. Der Mittelwert, der mit 4 höher ist als der Median, spiegelt die durchschnittliche Qualität der Empfehlungsschreiben im Datensatz wider und gibt einen Überblick über das Niveau der abgegebenen Empfehlungen.
+
+### Research
+
+```{r, out.width="50%", fig.cap="Research", echo = FALSE}
+library(ggplot2)
+
+ggplot(dataset1, aes(x = Research)) +
+  geom_histogram(binwidth = 0.45, fill = "#0DA3CB", color = "white", alpha = 0.5) +
+  labs(title = "",
+       x = "Research",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size = 12),
+        axis.text.x = element_text(face = "italic"),
+        axis.text.y = element_text(face = "italic"))
+```
+Für die Variable "Forschung", die angibt, ob Personen Forschung betrieben haben oder nicht, zeigen die Daten eine Verteilung, bei der der Median bei 1 liegt, was bedeutet, dass mindestens die Hälfte der Personen Forschung betrieben hat. Der Mittelwert, der mit 0,5475 niedriger als der Median ist, zeigt einen gewichteten Durchschnitt des Vorhandenseins von Forschung im Datensatz an, wobei diejenigen berücksichtigt werden, die keine Forschung betrieben haben. Der Minimalwert von 0 und der Maximalwert von 1 spiegeln den binären Charakter dieser Variable wider, wobei 0 für das Fehlen und 1 für das Vorhandensein von Forschung steht.
+
+
+
+
+```{=latex}
+\newpage{}
+```
+
+# Methoden unserer Analyse
+
+In diesem Abschnitt wollen wir die Methoden vorstellen die wir nutzen werden. 
+
+## Lineare Regression 
+
+Die lineare Regressionsmethode ist ein Modell, das zur Annäherung an die Abhängigkeitsbeziehung zwischen einer abhängigen und einer unabhängigen Variable verwendet wird. Mit dieser Methode wird versucht, die Summe der quadratischen Fehler zwischen den beobachteten Werten und den durch das Modell vorhergesagten Werten zu minimieren. Sie wird in der Statistik und in verschiedenen Bereichen wie der Ökonometrie, dem Ingenieurwesen und der Datenwissenschaft häufig verwendet, um Vorhersagen zu treffen und Beziehungen zwischen Variablen zu analysieren. Es ist jedoch wichtig, ihre Annahmen wie Linearität und Fehlerunabhängigkeit zu berücksichtigen, um die Ergebnisse richtig zu interpretieren und Verzerrungen in den Schlussfolgerungen zu vermeiden. Darüber hinaus gibt es Varianten wie die multiple lineare Regression, die es ermöglicht, die Beziehung zwischen einer abhängigen Variablen und mehreren unabhängigen Variablen zu modellieren, sowie Regularisierungstechniken, um eine Überanpassung des Modells an die Trainingsdaten zu behandeln. 
+
+In unserer Analyse nutzen wir die Lineare Regression um eine Korrelation zwischen den Variablen und der 'Chance of Admit' Variable darzustellen. Hier sind alle Variablen, die nicht 'Chance of Admit' sind unsere unabhängigen Variablen und 'Chance of Admit' die abhängige Variable. Die Lineare Regression ist am besten geignet für diese Untersuchung und wird somit in dem nächsten Abschnitt genutzt.
+
+
+## t-Test
+
+In unserer Analyse nutzen wir die Lineare Regression um eine Korrelation zwischen den Variablen und der 'Chance of Admit' Variable darzustellen. Hier sind alle Variablen, die nicht 'Chance of Admit' sind unsere unabhängigen Variablen und 'Chance of Admit' die abhängige Variable. Die Lineare Regression ist am besten geignet für diese Untersuchung und wird somit in dem nächsten Abschnitt genutzt. 
+
+Innerhalb unseres Bachelor Studiums, kommen wir eher selten auf die Möglichkeit Forschung durchzuführen, mit Ausnahme von diesem Projekt. Aufgrunddessen, nutzen wir einen t-Test um den Einfluss von Forschung (Research) in einer Bewerbung auf die 'Chance of Admit' Variable zu messen und zu erkennen ob diese Eigenschaft stochastisch relevant ist. Durch weitere Recherche, erkennen wir die Möglichkeit auf einen Welch t-Test, [@Kubinger:2009aa] und [@EWS]. Wir führen so einen Test durch, da wir nicht Aussagen können ob die Varianzen der Population mit Forschungserfahrung und ohne gleich sind.
+
+```{=latex}
+\newpage{}
+```
+
+
+# Auswertung unserer Methoden
+
+Fassen wir zusammen, was wir bis jetzt gesehen haben: 
+
+Es gibt viele verschiedene Faktoren die die Wahrscheinlichkeit einer Zusage für einen Master oder ein PhD Programm beeinflussen können. Viele von diesen Faktoren sind schwer zu messen, wie die Aussagekraft eines 'Statement of Purpose' oder einem 'Letter of Recommendation'. 
+
+Wir haben auch erkannt, dass Universitäten, die ein höheres Ranking erhalten, auch höhere Durchschnittsresultate in Bewerbungen erhalten. Kurzgefasst, sind hier die Universitäten mit Rating 1 und 5, mit den Durchschnitts GRE-Scores im Vergleich: 
+
+```{r}
+dataset1 %>%
+  filter(University.Rating %in% c(1)) %>%
+  summarise(mean = mean(GRE.Score))
+
+dataset1 %>%
+  filter(University.Rating %in% c(5)) %>%
+  summarise(mean = mean(GRE.Score))
+```
+
+
+## Korrelation der Variablen 
+
+Wir wollen visualisieren welche Variablen stärker zusammenhängen. Das machen durch eine Färbung abhängig von dem Wert der Korrelation. 
+
+
+```{r echo = FALSE}
+library(corrplot)
+dataset1 <- read.csv("../Daten/adm_data1.csv")
+dataset1 <- dataset1 %>% select(-Serial.No.)
+
+# Wenn du die Spaltennamen änderst, stelle sicher, dass "GRE" in der Liste ist
+colnames(dataset1) <- c("GRE", "TOEFL", "University Rating", "SOP", "LOR", "CGPA", "Research", "Chance of Admit")
+
+# Berechnung der Korrelationsmatrix für alle Variablen
+correlation_matrix <- cor(dataset1)
+
+# Erstellen der Farbpalette
+my_colors <- colorRampPalette(c("white", "#6CFFEA", "#096457"))(100)
+
+# Zeichnen des Korrelationsplots
+corrplot(correlation_matrix, method = "color", tl.col = "black", tl.srt = 30, font=3, family = "serif", col = my_colors)
+
+```
+Hier können wir erkennen, dass es einen positiven Zusammenhang zwischen den Variablen: CGPA und GRE Score und der Variable Chance of Admit. Weiter wollen wir die Korrelationen zwischen den anderen Variablen visualisieren.
+
+## Lineare Regression: GRE Score v Chance of Admit
+
+Die Graduate Record Examination (GRE) ist für Bewerber, die sich um die Zulassung zu Masterstudiengängen verschiedener Fachrichtungen bewerben, von großer Bedeutung. Als standardisierter Test dient das GRE als allgemeiner Maßstab, um die Eignung und Vorbereitung der Bewerber für ein Studium auf Graduiertenebene zu bewerten. Universitäten verwenden GRE-Ergebnisse oft als eines von mehreren Kriterien, um das akademische Potenzial und die Bereitschaft der Bewerber für ein weiterführendes Studium zu beurteilen. In vielen Fällen, insbesondere in Bereichen wie den Ingenieur-, Natur- und Sozialwissenschaften, können gute GRE-Ergebnisse ein wichtiger Faktor sein, um Bewerber in wettbewerbsorientierten Zulassungsverfahren zu unterscheiden. Darüber hinaus können GRE-Ergebnisse den Zulassungsausschüssen wertvolle Einblicke in das quantitative Denken, das sprachliche Denken und die analytischen Schreibfähigkeiten der Bewerber geben, die für den Erfolg in den Kursen und der Forschung auf Graduiertenebene unerlässlich sind. Der GRE ist zwar nur eine Komponente des Bewerbungspakets, seine Bedeutung liegt jedoch in seiner Fähigkeit, einen standardisierten Maßstab für die Bewertung der akademischen Fähigkeiten der Bewerber und ihres potenziellen Beitrags zum gewählten Studienfach zu bieten. Wir werden versuchen, einen Zusammenhang zwischen der Chance auf eine Zulassung und dem GRE-Score zu finden, um zu zeigen, dass dies der Fall ist. Dafür verwenden wir lineare Regression:
+
+```{r}
+dataset1 <- read.csv("../Daten/adm_data1.csv")
+modell <- lm(`Chance.of.Admit` ~ `GRE.Score`, data = dataset1)
+
+par(font.main = 8, cex.axis = 0.6, font.axis = 3)
+
+plot(dataset1$`GRE.Score`, dataset1$`Chance.of.Admit`, 
+     main = "Lineare Regression", 
+     xlab = "", 
+     ylab = "", 
+     col = "black",              
+     pch = 16,                   
+     cex = 0.5,
+     )
+
+abline(modell, col = "#900C3F", lwd = 2)
+
+mtext("GRE", side = 1, line = 3, col = "black", cex = 1, font=3, family = "serif")
+
+mtext("Chance of Admit", side = 2, line = 3, col = "black", cex = 1, font=3, family = "serif")
+```
+
+```{r}
+dataset1 <- read.csv("../Daten/adm_data1.csv")
+modell <- lm(`Chance.of.Admit` ~ `GRE.Score`, data = dataset1)
+
+x <-  dataset1$`GRE.Score`
+y <- dataset1$`Chance.of.Admit`
+
+linearmodell <- lm(x ~ y, data = dataset1)
+
+mean_x <- mean(x)
+mean_y <- mean(y)
+
+var_x <- var(x)
+var_y <- var(y)
+
+cov_xy <- cov(x, y)
+
+r_xy <- cor(x ,y , method ="pearson")
+
+lin_coef <- coef(linearmodell)
+
+residuen <- residuals(linearmodell)
+
+sum_res_squared <- sum(residuen^2)
+```
+
+```{r, echo = FALSE}
+
+print(paste("Empirische Mittelwert der GRE:", mean_x))
+print(paste("Empirische Mittelwert der Aufnahmechance:", mean_y))
+print(paste("Empirische Varianz der GRE:", var_x))
+print(paste("Empirische Varianz der Aufnahmechance:", var_y))
+print(paste("Empirischer Kovarianz:", cov_xy))
+print(paste("Empirischer Korrelationskoeffizient:", r_xy))
+print(paste("Koefizienten der Lineare Regression:", lin_coef))
+print(paste("Summe der Residuen zum quadrat:", sum_res_squared))
+
+
+```
+
+Basierend auf der linearen Regression zwischen den Graduate Record Examination (GRE) Ergebnissen und der Chance auf Zulassung zeigt sich ein positiver Zusammenhang zwischen diesen beiden Variablen. Der empirische Korrelationskoeffizient von 0.80 deutet auf eine starke lineare Beziehung hin, was bedeutet, dass höhere GRE-Werte tendenziell mit einer höheren Zulassungschance korrelieren. Die Parameter der linearen Regression zeigen, dass jeder zusätzliche Punkt im GRE-Ergebnis im Durchschnitt die Chance auf Zulassung um etwa 0.01 erhöht. Die Residuen, die quadratische Summe der Abweichungen zwischen den beobachteten und vorhergesagten Werten, sind mit 18689.68 hoch, was darauf hinweisen könnte, dass das Modell möglicherweise nicht perfekt ist und noch Raum für Verbesserungen bietet.
+
+## Lineare Regression: CGPA v Chance of Admit
+
+Der kumulative Notendurchschnitt (CGPA) spielt vermutlich eine entscheidende Rolle bei der Bewertung von Bewerbern für Hochschulzulassungen. Er fungiert als Maßstab für die akademische Leistung und das Engagement eines Bewerbers während seines Studiums. Ein hoher CGPA deutet auf konsistente Exzellenz in den Kursen hin, was wiederum die Fähigkeit des Bewerbers demonstriert, akademische Anforderungen zu erfüllen und erfolgreich im Studium zu sein. Im Hinblick auf die Zulassungsentscheidungen werden wir versuchen, eine Korrelation zwischen dem akademischen Durchschnitt und den Zulassungschancen aufzuzeigen, die die Bedeutung des akademischen Hintergrunds für die Entscheidungsfindung des Zulassungsausschusses verdeutlichen wurde. Ein solides CGPA kann ein Bewerber sein, der sich durch Beharrlichkeit, Disziplin und Fähigkeit zur Leistung auszeichnet, was ihn zu einem attraktiven Kandidaten für eine Zulassung macht. Dies wird, wie beim GRE, durch eine lineare Regressionsanalyse erreicht. Wir nutzen den gleichen Code wie oben und lassen ihn deshalb an dieser Stelle weg. 
+
+```{r echo = FALSE}
+modell <- lm(`Chance.of.Admit` ~ `CGPA`, data = dataset1)
+
+par(font.main = 8, cex.axis = 0.6, font.axis = 3)
+
+plot(dataset1$`CGPA`, dataset1$`Chance.of.Admit`, 
+     main = "Lineare Regression", 
+     xlab = "", 
+     ylab = "", 
+     col = "black",              
+     pch = 16,                   
+     cex = 0.5,
+     )
+
+abline(modell, col = "#900C3F", lwd = 2)
+
+mtext("CGPA", side = 1, line = 3, col = "black", cex = 1, font=3, family = "serif")
+
+mtext("Chance of Admit", side = 2, line = 3, col = "black", cex = 1, font=3, family = "serif")
+```
+
+
+
+
+
+```{r echo = FALSE}
+x <-  dataset1$`CGPA`
+y <- dataset1$`Chance.of.Admit`
+
+linearmodell <- lm(x ~ y, data = dataset)
+
+mean_x <- mean(x)
+mean_y <- mean(y)
+
+var_x <- var(x)
+var_y <- var(y)
+
+cov_xy <- cov(x, y)
+
+r_xy <- cor(x ,y , method ="pearson")
+
+lin_coef <- coef(linearmodell)
+
+residuen <- residuals(linearmodell)
+
+sum_res_squared <- sum(residuen^2)
+
+
+print(paste("Empirische Mittelwert der CGPA:", mean_x))
+print(paste("Empirische Mittelwert der Aufnahmechance:", mean_y))
+print(paste("Empirische Varianz der CGPA:", var_x))
+print(paste("Empirische Varianz der Aufnahmechance:", var_y))
+print(paste("Empirischer Kovarianz:", cov_xy))
+print(paste("Empirischer Korrelationskoeffizient:", r_xy))
+print(paste("Koefizienten der Lineare Regression:", lin_coef))
+print(paste("Summe der Residuen zum quadrat:", sum_res_squared))
+
+
+```
+Die Analyse zwischen dem kumulativen Notendurchschnitt (CGPA) und der Chance auf Zulassung zeigt einen noch stärkeren Zusammenhang als bei der vorherigen Analyse mit GRE. Der hohe empirische Korrelationskoeffizient von 0.87 deutet auf eine sehr starke positive lineare Beziehung hin, was bedeutet, dass höhere CGPA-Werte tendenziell mit einer höheren Zulassungschance korrelieren. Die Parameter der linearen Regression zeigen, dass jeder zusätzliche Punkt im CGPA im Durchschnitt die Chance auf Zulassung um etwa 0.01 erhöht, ähnlich wie bei der vorherigen Analyse. Die Residuen, die quadratische Summe der Abweichungen zwischen den beobachteten und vorhergesagten Werten, sind mit 33.68 relativ niedrig, was darauf hindeutet, dass das Modell die Daten gut erklären kann und nur eine geringe Streuung aufweist. Dies deutet darauf hin, dass das Modell eine gute Passform für die Daten aufweist und die Vorhersagen akkurat sind.
+
+
+
+
+## t-Test
+
+Um den Einfluss der Forschungserfahrung (Research) auf die Zulassungschancen (Chance.of.Admit) zu untersuchen, können wir einen t-Test für unabhängige Stichproben in R verwenden. Dieser Test vergleicht die Mittelwerte der Zulassungschancen zwischen zwei Gruppen: Kandidaten mit Forschungserfahrung (Research = 1) und Kandidaten ohne Forschungserfahrung (Research = 0).
+
+Ich werde nun die Daten in R laden und den entsprechenden t-Test durchführen. Lassen Sie uns die Ergebnisse anschauen und daraus Schlussfolgerungen ziehen. Wir nutzen den t-Test aus [@article]
+
+
+```{r}
+library(dplyr)
+dataset1 <- read.csv("../Daten/adm_data1.csv")
+# Trennung der Daten in zwei Gruppen basierend auf der Forschungserfahrung
+group_with_research <- filter(dataset1, Research == 1)$`Chance.of.Admit`
+group_without_research <- filter(dataset1, Research == 0)$`Chance.of.Admit`
+
+# Durchführung eines t-Tests für unabhängige Stichproben
+t_test_result <- t.test(group_with_research, group_without_research, var.equal = FALSE)
+
+# Ausgabe des Testergebnisses
+t_test_result
+
+```
+
+Der durchgeführte t-Test für unabhängige Stichproben ergab einen t-Wert von etwa 13.35 und einen sehr kleinen p-Wert (2.2e-16). Dieser p-Wert ist deutlich kleiner als das übliche Signifikanzniveau von 0.05, was darauf hindeutet, dass es einen statistisch signifikanten Unterschied in den Zulassungschancen zwischen den Gruppen mit und ohne Forschungserfahrung gibt.
+
+Die Forschungserfahrung hat einen signifikanten Einfluss auf die Chance auf Zulassung. Kandidaten mit Forschungserfahrung haben statistisch signifikant höhere Chancen auf Zulassung im Vergleich zu Kandidaten ohne Forschungserfahrung.
+
+Zusammenfassend können wir erkennen, dass binnen unseres Datensatzes eine Universität oder Hochshule die ein höheres Rating besitzt, auch qualitativ höhere Bewerbungen haben wird. Dies kann man sich durch viele verschiedene Erklärungen und Begründungen erarbeiten. Eine Möglichkeit ist, dass man intuitiv meint bessere Noten für eine höher angesehene Universität zu brauchen. Eine andere Perspektive ist, dass man sein gesamtes Bewerbungsportfolio stärken möchte für eine höher angesehene Universität und dadurch auch der Durchschnitt aller beobachteten Variablen steigt. Wir nehmen aus unserem Projekt zur Kenntnis, dass es keine eine Variable gibt die eine Aufnahme sichert. Es ist ein viel holistischer Ansatz und das "Gesamtpaket" wird betrachtet einer Bewerbung. Man könnte den Datensatz erweitern mit Perspektive auf überfachliche Arbeit oder spezifische Eigeninitiative, weiter könnten auch Interviews und die Performance innerhalb eines Interviews gemessen werden um den Datensatz zu erweitern. 
+```{=latex}
+\newpage{}
+```
+
+
+# Literatur
+
