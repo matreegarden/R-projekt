@@ -1,0 +1,33 @@
+---
+title: "Struktur des Berichts"
+output: html_notebook
+---
+
+## Abschnitt 1 - Einleitung: 
+In der Einleitung solltet Ihr Eure allgemeine Forschungsfrage und eure Daten vorstellen (woher sie stammen, wie sie erhoben wurden, um welche Fälle es sich handelt, welche Variablen enthalten sind, usw.).
+
+## Abschnitt 2 - Explorative Datenanalyse: 
+Erstellt eine Beschreibung des Datensatzes, die sowohl numerische Zusammenfassungen (deskriptive Statistiken) als auch entsprechende Grafiken enthält. Konzentriert Euch bei größeren Datensätzen auf die Variablen, die Ihr in Abschnitt 4 genauer analysiert.
+
+## Abschnitt 3 - Methoden: 
+Beschreibt kurz die von Euch verwendete(n) statistischen Methode(n). Gebt Referenzen auf entsprechende Literatur für eine detaillierte Beschreibung.
+
+## Abschnitt 4 - Ergebnisse und Schlussfolgerungen: 
+Identifiziert eine interessante abhängige Variable Y und mindestens eine Einflussvariable X. Die Variable X kann entweder kategoriell sein und für den Vergleich von zwei (oder mehr) Gruppen stehen oder metrisch. Im zweiten Fall wird man dann an einer Beschreibung des linearen Zusammenhangs zwischen X und Y interessiert sein. Wendet, die in Abschnitt 3 beschriebenen Methoden passend an und berichtet die Ergebnisse, die nötig sind um eure Forschungsfrage zu beantworten und zieht entsprechende Schlussfolgerungen.
+
+
+# Struktur anhand unseres Datensatzes: 
+## Abschnitt 1: 
+Erläuterung unserer Fragestellung: Wir wollen schauen welche Faktoren eine Bewerbung für ein Master Programm stärken. 
+Erläuterung der Daten 
+
+## Abschnitt 2: 
+Bringe Visualisierungen der Daten ein (Barplots, Violindiagams,...)
+
+## Abschnitt 3: 
+Erläuterung des t-tests und warum wir ihn so machen. Research ist anhand unseres Studiengangs nicht sehr präsent. Deswegen betrachten wir den Einfluss dessen auf die Chance of Admit Variable
+
+## Abschnitt 4: 
+Durchführung des t-tests 
+
+Zusammmenfassung und shortcomings der Variablen. 
