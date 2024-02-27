@@ -1,0 +1,170 @@
+---
+title: 'R PROJEKT MA0009: Graduate Admissions'
+subtitle: 'Wie man eine Bewerbung stärken kann'
+author: "Mikel Funes Morfín, Maxim Alexander Baumgärtel"
+date: "`r Sys.Date()`"
+output: 
+  beamer_presentation:
+    theme: "Madrid"
+    colortheme: "dolphin"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Datensatz
+
+```{r, Preambel Data, include = FALSE}
+library(tidyverse)
+library(readr)
+library(fs)
+library(dplyr)
+library(ggplot2)
+
+# Dataset
+
+dataset1 <- read_csv("../Daten/adm_data1.csv") # note that this is the changed one and will be used afte explanation 
+dataset <- read_csv("../Daten/adm_data.csv")
+
+```
+
+```{r}
+variable_descriptions <- data.frame(
+  Variable = colnames(dataset1),
+  Beschreibung = c(
+    "Nummer",
+    "GRE Scores ",
+    "TOEFL Scores ",
+    "Bewertung der Universität",
+    "Statement of Purpose",
+    "Letter of Recommendation",
+    "Durchschnittsnote",
+    "Forschungserfahrung",
+    "Chance der Zulassung"
+  )
+)
+print(variable_descriptions)
+```
+
+
+## GRE, TOEFL und University Rating
+```{r, out.width = "50%"}
+print("GRE.Score")
+summary(dataset1$GRE.Score)
+print("TOEFL.Score")
+summary(dataset1$TOEFL.Score)
+print("University.Rating")
+summary(dataset1$University.Rating)
+
+```
+## SOP, LOR und CGPA
+```{r, out.width = "50%"}
+print("SOP")
+summary(dataset1$SOP)
+print("LOR")
+summary(dataset1$LOR)
+print("CGPA")
+summary(dataset1$CGPA)
+
+```
+## Research und Chance of Admit
+```{r, out.width = "50%"}
+print("Research")
+summary(dataset1$Research)
+print("Chance of Admit")
+summary(dataset1$Chance.of.Admit)
+```
+
+## Korrelationen 
+
+```{r,echo = FALSE, out.width = "60%"}
+library(corrplot)
+dataset1 <- read.csv("../Daten/adm_data1.csv")
+dataset1 <- dataset1 %>% select(-Serial.No.)
+
+# Wenn du die Spaltennamen änderst, stelle sicher, dass "GRE" in der Liste ist
+colnames(dataset1) <- c("GRE", "TOEFL", "University Rating", "SOP", "LOR", "CGPA", "Research", "Chance of Admit")
+
+# Berechnung der Korrelationsmatrix für alle Variablen
+correlation_matrix <- cor(dataset1)
+
+# Erstellen der Farbpalette
+my_colors <- colorRampPalette(c("white", "#6CFFEA", "#096457"))(100)
+
+# Zeichnen des Korrelationsplots
+corrplot(correlation_matrix, method = "color", tl.col = "black", tl.srt = 30, font=3, family = "serif", col = my_colors)
+
+```
+
+## Lineare Regression: GRE Score vs Chance of Admit 
+
+```{r, echo = FALSE}
+dataset1 <- read.csv("../Daten/adm_data1.csv")
+modell <- lm(`Chance.of.Admit` ~ `GRE.Score`, data = dataset1)
+
+par(font.main = 8, cex.axis = 0.6, font.axis = 3)
+
+plot(dataset1$`GRE.Score`, dataset1$`Chance.of.Admit`, 
+     main = "Lineare Regression", 
+     xlab = "", 
+     ylab = "", 
+     col = "black",              
+     pch = 16,                   
+     cex = 0.5,
+     )
+
+abline(modell, col = "#900C3F", lwd = 2)
+
+mtext("GRE Score", side = 1, line = 3, col = "black", cex = 1, font=3, family = "serif")
+
+mtext("Chance of Admit", side = 2, line = 3, col = "black", cex = 1, font=3, family = "serif")
+```
+
+## Lineare Regression: CGPA vs Chance of Admit
+
+```{r, echo = FALSE}
+modell <- lm(`Chance.of.Admit` ~ `CGPA`, data = dataset1)
+
+par(font.main = 8, cex.axis = 0.6, font.axis = 3)
+
+plot(dataset1$`CGPA`, dataset1$`Chance.of.Admit`, 
+     main = "Lineare Regression", 
+     xlab = "", 
+     ylab = "", 
+     col = "black",              
+     pch = 16,                   
+     cex = 0.5,
+     )
+
+abline(modell, col = "#900C3F", lwd = 2)
+
+mtext("CGPA", side = 1, line = 3, col = "black", cex = 1, font=3, family = "serif")
+
+mtext("Chance of Admit", side = 2, line = 3, col = "black", cex = 1, font=3, family = "serif")
+
+```
+
+
+## Einfluss von Research auf Chance of Admit 
+```{r}
+dataset1 <- read.csv("../Daten/adm_data1.csv")
+
+group_with_research <- filter(dataset1, Research == 1)$`Chance.of.Admit`
+group_without_research <- filter(dataset1, Research == 0)$`Chance.of.Admit`
+
+t_test_result <- t.test(group_with_research, group_without_research, var.equal = FALSE) # Welch t-Test
+
+t_test_result
+```
+
+## Ende
+
+```{=latex}
+\centering \Huge
+  \emph{Vielen Dank}
+```
+
+## Quelle
+[https://www.kaggle.com/datasets/akshaydattatraykhare/data-for-admission-in-the-university]
+
